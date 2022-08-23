@@ -1,12 +1,12 @@
 package main
 
 import (
-	"crypto/x509"
 	"crypto/tls"
-	"net/http"
-	"log"
-	"io/ioutil"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"path/filepath"
 )
 
@@ -15,7 +15,6 @@ func handleError(err error) {
 		log.Fatal("Fatal", err)
 	}
 }
-
 
 func main() {
 	absPathClientCrt, err := filepath.Abs("certs/client.crt")
@@ -35,19 +34,26 @@ func main() {
 	// We're going to load the server cert and add all the intermediates and CA from that.
 	// Alternatively if we have the CA directly we could call AppendCertificate method
 	fakeCA, err := ioutil.ReadFile(absPathServerCrt)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	ok := roots.AppendCertsFromPEM([]byte(fakeCA))
 	if !ok {
 		panic("failed to parse root certificate")
 	}
 
 	tlsConf := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs: roots,
+		Certificates:       []tls.Certificate{cert},
+		RootCAs:            roots,
+		InsecureSkipVerify: false,
+		MinVersion:         tls.VersionTLS12,
 	}
 	tr := &http.Transport{TLSClientConfig: tlsConf}
 	client := &http.Client{Transport: tr}
 
-	resp, err := client.Get("https://mysite.local")
+	resp, err := client.Get("https://localhost")
 	if err != nil {
 		log.Println(err)
 		return

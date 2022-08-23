@@ -9,29 +9,10 @@ All following certs use armoured output ('.crt' aka '.pem') so are readable
    
 **Note FQDN field must be correct here!**      
 
-use a test domain e.g. mysite.local then
+If you want to use a different test domain to localhost here e.g. mysite.local then
 edit your `/etc/hosts` file to point 127.0.0.1 at mysite.local
-```
-$ openssl genrsa -out server.key 4096    
-$ openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365
-```
 
-#### Creation of private key 
-```
-$ openssl genrsa -out client.key 4096
-```
-
-#### Generate client's Certificate Signing Request (CSR)*
-```
-$ openssl req -new -key client.key -out client.csr
-```
-
-#### Sign client's CSR with server's CA
-```
-// This file is traditionally how a CA would track the certs it has minted.
-$ echo "00" > file.srl 
-$ openssl x509 -req -in client.csr -CA server.crt -CAkey server.key -CAserial file.srl -out client.crt
-```
+_All the certs get created by running `./generate_certs.sh`, see that file for details_
 
 ### Files required for use in this test
 Because the client and server certs use the same CA this is more simplistic.
@@ -48,6 +29,11 @@ __Client Implementation__
 
 ### Running 
 ```
-$ sudo go run server.go
-$ go run client.go
+$ sudo go run server/server.go
+
+# In a separate terminal:
+$ go run client/client.go 
+
+200 OK
+Hello from test server.
 ```

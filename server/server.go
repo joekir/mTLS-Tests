@@ -1,11 +1,12 @@
 package main
 
 import (
-	"net/http"
-	"log"
 	"crypto/tls"
-	"io/ioutil"
 	"crypto/x509"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"path/filepath"
 )
 
@@ -26,7 +27,6 @@ func main() {
 	absPathServerKey, err := filepath.Abs("certs/server.key")
 	handleError(err)
 
-
 	clientCACert, err := ioutil.ReadFile(absPathServerCrt)
 	handleError(err)
 
@@ -34,14 +34,11 @@ func main() {
 	clientCertPool.AppendCertsFromPEM(clientCACert)
 
 	tlsConfig := &tls.Config{
-		ClientAuth: tls.RequireAndVerifyClientCert,
-		ClientCAs: clientCertPool,
+		ClientAuth:               tls.RequireAndVerifyClientCert,
+		ClientCAs:                clientCertPool,
 		PreferServerCipherSuites: true,
-		MinVersion: tls.VersionTLS12,
+		MinVersion:               tls.VersionTLS12,
 	}
-
-	tlsConfig.BuildNameToCertificate()
-
 
 	http.HandleFunc("/", HelloServer)
 	httpServer := &http.Server{
@@ -49,6 +46,7 @@ func main() {
 		TLSConfig: tlsConfig,
 	}
 
-	err = httpServer.ListenAndServeTLS(absPathServerCrt,absPathServerKey)
+	fmt.Println("Running Server...")
+	err = httpServer.ListenAndServeTLS(absPathServerCrt, absPathServerKey)
 	handleError(err)
 }
